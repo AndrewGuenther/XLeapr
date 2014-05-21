@@ -1,0 +1,5 @@
+{
+   "flip":["Alt_L", "Tab"],
+   "swipe":["Control_L", "Alt_L"],
+   "clap":["Control_L", "Alt_L", "l"]
+}
