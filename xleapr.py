@@ -130,21 +130,28 @@ class XLeapr(Leap.Listener):
         XLeapr.disp.sync()
         return
 
-    def state_string(self, state):
-        if state == Leap.Gesture.STATE_START:
-            return "STATE_START"
-
-        if state == Leap.Gesture.STATE_UPDATE:
-            return "STATE_UPDATE"
-
-        if state == Leap.Gesture.STATE_STOP:
-            return "STATE_STOP"
-
-        if state == Leap.Gesture.STATE_INVALID:
-            return "STATE_INVALID"
-
     def perform_gesture(self, name, extra_keys=[]):
-        for key in self.config[name]:
+        application = None
+        try:
+            disp = display.Display()
+            window = disp.get_input_focus().focus
+            wmclass = window.get_wm_class()
+            if wmclass is None:
+                window = window.query_tree().parent
+                wmclass = window.get_wm_class()
+
+            application = wmclass[0]
+        except:
+            pass
+
+        print(application)
+
+        if application is not None and self.config[application] != []:
+            keys = self.config[application][name]
+        else:
+            keys = self.config[name]
+
+        for key in keys:
             ext.xtest.fake_input(XLeapr.disp, X.KeyPress, key)
 
         for key in extra_keys:
@@ -153,23 +160,10 @@ class XLeapr(Leap.Listener):
         for key in extra_keys[::-1]:
             ext.xtest.fake_input(XLeapr.disp, X.KeyRelease, key)
 
-        for key in self.config[name][::-1]:
+        for key in keys[::-1]:
             ext.xtest.fake_input(XLeapr.disp, X.KeyRelease, key)
 
         XLeapr.disp.flush()
-
-    def swipe(self, direction):
-        for key in self.config["swipe"]:
-            ext.xtest.fake_input(XLeapr.disp, X.KeyPress, key)
-
-        ext.xtest.fake_input(XLeapr.disp, X.KeyPress, direction)
-        ext.xtest.fake_input(XLeapr.disp, X.KeyRelease, direction)
-
-        for key in self.config["swipe"][::-1]:
-            ext.xtest.fake_input(XLeapr.disp, X.KeyRelease, key)
-
-        XLeapr.disp.flush()
-
 
 def main():
     # Create a sample listener and controller
